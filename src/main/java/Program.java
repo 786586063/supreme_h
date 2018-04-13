@@ -2,8 +2,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import utils.DateUtils;
 import utils.HttpRequest;
+import utils.IOUtils;
+import utils.JsonUtils;
 
 import java.net.URI;
+import java.net.URL;
 import java.text.DateFormatSymbols;
 import java.util.*;
 
@@ -25,10 +28,11 @@ public class Program {
         System.out.println(res_login);
         JSONObject object = JSON.parseObject(res_login);
         String code = object.getString("code");
+        String  token = "";
         if (code.equals("20000")){
             System.out.println("登录："+object.getString("message")+"   正在获取token，请稍后。。。");
             //获取token
-            String  token = object.getJSONObject("data").getString("token");
+            token = object.getJSONObject("data").getString("token");
             if (token !=null && !token.equals("")){
                 System.out.println("获取token成功！");
 
@@ -66,6 +70,17 @@ public class Program {
                 System.out.println(startTime+"  - "+endTIme);
                 //构建content参数
                 String content = getContent();
+                Map<String,Object> param = new HashMap<String, Object>();
+                param.put("end_date",endTIme);
+                param.put("attachment","");
+                param.put("business_type","week");
+                param.put("content",content);
+                param.put("start_date",startTime);
+
+                String report = REPORT_URL +"&token="+token;
+                //发送Post请求
+                String res = HttpRequest.sendPost(report, param);
+
 
             }
 
@@ -79,7 +94,34 @@ public class Program {
     }
 
     public static String getContent() {
+        String parentPath = "E:/";
+        Random random = new Random(10);
 
-        return "";
+        IOUtils.readFileByLines(parentPath+random.nextInt()+".txt");
+        List<Map<String,String>> list = new ArrayList<Map<String, String>>();
+        for (int i = 0; i<3 ;i++){
+            Map<String,String> map = new LinkedHashMap<String, String>();
+            if (i == 0){
+                map.put("content", IOUtils.readFileByLines(parentPath+random.nextInt()+".txt"));
+                map.put("require","1");
+                map.put("sort","1");
+                map.put("title","本周工作总结");
+            }else if (i ==1){
+                map.put("content",IOUtils.readFileByLines(parentPath+random.nextInt()+".txt"));
+                map.put("require","0");
+                map.put("sort","2");
+                map.put("title","本周心得体会");
+            }else if (i ==2){
+                map.put("content",IOUtils.readFileByLines(parentPath+random.nextInt()+".txt"));
+                map.put("require","0");
+                map.put("sort","3");
+                map.put("title","实习问题反馈");
+            }
+            list.add(map);
+
+        }
+
+
+        return JsonUtils.obj2JsonString(list);
     }
 }

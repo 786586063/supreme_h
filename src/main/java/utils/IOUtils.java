@@ -9,7 +9,7 @@ public class IOUtils {
     /**
      * 以行为单位读取文件，常用于读面向行的格式化文件
      */
-    public static void readFileByLines(String fileName) {
+    public static String readFileByLines(String fileName) {
         File file = new File(fileName);
         BufferedReader reader = null;
         String con = "";
@@ -36,5 +36,6 @@ public class IOUtils {
                 }
             }
         }
+        return con;
     }
 }
